@@ -54,6 +54,8 @@ case object importSwissProt {
     importAnnotations()
     importIsoforms()
     // importIsoformSequences()
+
+    titan.shutdown()
   }
 
   // These methods follow the (a possible) order in which they must be run.

@@ -22,3 +22,6 @@ data/out/
 
 # SwissProt xml
 uniprot_sprot.xml
+
+# db files
+db
