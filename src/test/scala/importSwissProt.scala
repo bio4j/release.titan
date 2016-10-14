@@ -20,6 +20,9 @@ case object importSwissProt {
     Seq("rm", "-rf", "db").!
   }
 
+  def closeDB =
+    titan.shutdown()
+
   // the graph
   lazy val uniProtGraph =
     new UniProtGraph(conf.untypedGraph)
@@ -57,9 +60,9 @@ case object importSwissProt {
     // importKeywords()
     importAnnotations()
     importIsoforms()
-    // importIsoformSequences()
+    importIsoformSequences()
 
-    titan.shutdown()
+    closeDB
   }
 
   // These methods follow the (a possible) order in which they must be run.
