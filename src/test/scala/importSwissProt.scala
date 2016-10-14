@@ -12,6 +12,13 @@ case object importSwissProt {
 
   lazy val conf = TitanConf(new java.io.File("db"))
 
+  def cleanDB = {
+
+    import sys.process._
+
+    Seq("rm", "-rf", "db").!
+  }
+
   // the graph
   lazy val uniProtGraph =
     new UniProtGraph(conf.untypedGraph)
@@ -26,7 +33,6 @@ case object importSwissProt {
   // the iterator of entries
   def entries =
     uniprot.Entry.fromUniProtLines( io.Source.fromFile("uniprot_sprot.xml").getLines )
-
 
   def initTypes = {
 
