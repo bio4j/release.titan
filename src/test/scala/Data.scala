@@ -1,36 +1,33 @@
-package bio4j.data.test
+package bio4j.data.titan.test
 
 import com.bio4j.angulillos.UntypedGraph
 import com.bio4j.angulillos.titan._
 import com.thinkaurelius.titan.core._
 import com.bio4j.model._
-import com.bio4j.data.uniprot._
+import com.bio4j.data._
 import scala.compat.java8.OptionConverters._
 import scala.collection.JavaConverters._
 
 import org.scalatest.FunSuite
 
-class DataTest extends FunSuite {
+class FullSwissProtDataImport extends FunSuite {
 
   lazy val conf = TitanConf(new java.io.File("db"))
 
+  // the iterator of entries
   def entries =
-    Entry.fromUniProtLines( io.Source.fromFile("../uniprot_sprot.xml").getLines )
+    uniprot.Entry.fromUniProtLines( io.Source.fromFile("uniprot_sprot.xml").getLines )
 
+  // the graph
   lazy val uniProtGraph =
     new UniProtGraph(conf.untypedGraph)
 
+  // the underlying Titan instance
   lazy val titan =
     uniProtGraph.raw().asInstanceOf[TitanUntypedGraph]
 
-  lazy val importProteins =
-    ImportEntryProteins(uniProtGraph)
-
-  lazy val importAnnotations =
-    ImportAnnotations(uniProtGraph)
-
-  lazy val importGeneNames =
-    ImportEntryGeneNames(uniProtGraph)
+  lazy val uniProtImport =
+    uniprot.Process(uniProtGraph)
 
   ignore("initialize types") {
 
@@ -48,7 +45,7 @@ class DataTest extends FunSuite {
     entries.zipWithIndex foreach {
 
       case (entry, index) =>
-        importProteins.fromEntry.addVertex(entry, uniProtGraph)
+        uniProtImport.entryProteins.process(entry, uniProtGraph)
         if(index % 1000 == 0) {
           println { s"Committing after ${index} proteins" }
           titan.commit()
@@ -61,7 +58,7 @@ class DataTest extends FunSuite {
     entries.zipWithIndex foreach {
 
       case (entry, index) =>
-        importGeneNames.fromEntry.addVertex(entry, uniProtGraph)
+        uniProtImport.entryGeneNames.process(entry, uniProtGraph)
         if(index % 5000 == 0) {
           println { s"Committing after ${index} gene names" }
           titan.commit()
@@ -91,7 +88,7 @@ class DataTest extends FunSuite {
     entries.zipWithIndex foreach {
 
       case (entry, index) =>
-        importAnnotations.fromEntry.addVertex(entry, uniProtGraph)
+        uniProtImport.comments.process(entry, uniProtGraph)
         if(index % 1000 == 0) {
           println { s"Committing after ${index} entries" }
           titan.commit()
