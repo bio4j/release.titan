@@ -7,6 +7,7 @@ import com.bio4j.model._
 import com.bio4j.data._
 import scala.compat.java8.OptionConverters._
 import scala.collection.JavaConverters._
+import ohnosequences.fastarious._
 
 case object importSwissProt {
 
@@ -18,6 +19,9 @@ case object importSwissProt {
 
     Seq("rm", "-rf", "db").!
   }
+
+  def closeDB =
+    titan.shutdown()
 
   // the graph
   lazy val uniProtGraph =
@@ -33,6 +37,9 @@ case object importSwissProt {
   // the iterator of entries
   def entries =
     uniprot.Entry.fromUniProtLines( io.Source.fromFile("uniprot_sprot.xml").getLines )
+
+  def isoformSequences =
+    fasta.parseFastaDropErrors( io.Source.fromFile("uniprot_sprot_varsplic.fasta").getLines )
 
   def initTypes = {
 
@@ -53,9 +60,9 @@ case object importSwissProt {
     // importKeywords()
     importAnnotations()
     importIsoforms()
-    // importIsoformSequences()
+    importIsoformSequences()
 
-    titan.shutdown()
+    closeDB
   }
 
   // These methods follow the (a possible) order in which they must be run.
@@ -130,5 +137,13 @@ case object importSwissProt {
 
   // TODO get FASTA with sequences etc
   def importIsoformSequences(commitAfterEntries: Int = 1000) =
-    ???
+    isoformSequences.zipWithIndex foreach {
+
+      case (fa, index) =>
+        uniProtImport.isoformSequences.process(uniprot.IsoformFasta(fa), uniProtGraph)
+        if(index % commitAfterEntries == 0) {
+          println { s"Committing after ${index} entries" }
+          titan.commit()
+        }
+    }
 }
