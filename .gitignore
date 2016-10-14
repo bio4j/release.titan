@@ -20,8 +20,10 @@ data/out/
 .ensime*
 .idea*
 
-# SwissProt xml
+# SwissProt data
 uniprot_sprot.xml
+uniprot_sprot_varsplic.fasta
+keywords-all.tsv
 
 # db files
 db
