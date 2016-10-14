@@ -93,7 +93,10 @@ case object importSwissProt {
     }
 
   // TODO load from file
-  def importKeywordTypes = ???
+  def importKeywordTypes =
+    KeywordTypes.fromFile.foreach { keywordRow =>
+      uniProtImport.keywordTypes.process(keywordRow, uniProtGraph)
+    }
 
   def importKeywords(commitAfterEntries: Int = 1000) =
     entries.zipWithIndex foreach {
