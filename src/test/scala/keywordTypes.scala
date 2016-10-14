@@ -5,7 +5,7 @@ import com.bio4j.data.uniprot.KeywordRow
 case object KeywordTypes {
 
   def fromFile: Iterator[KeywordRow] =
-    io.Source.fromFile("keywords-all.tsv").getLines.map(
+    io.Source.fromFile("keywords-all.tsv").getLines.drop(1).map(
       line => {
         val columns = line.split('\t')
 
