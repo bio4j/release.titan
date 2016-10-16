@@ -53,14 +53,18 @@ case object importSwissProt {
 
   def theWholeThing = {
 
-    importProteins()
-    importGeneNames()
-    importComments()
-    // importKeywordTypes
-    // importKeywords()
-    importAnnotations()
-    importIsoforms()
-    importIsoformSequences()
+    cleanDB
+
+    initTypes
+
+    importProteins(10000)
+    importGeneNames(10000)
+    importComments(10000)
+    importKeywordTypes
+    importKeywords(10000)
+    importAnnotations(10000)
+    importIsoforms(10000)
+    importIsoformSequences(10000)
 
     closeDB
   }
@@ -72,7 +76,7 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.entryProteins.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Proteins: committing after ${index} entries" }
           titan.commit()
         }
     }
@@ -83,7 +87,7 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.entryGeneNames.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Gene names: committing after ${index} entries" }
           titan.commit()
         }
     }
@@ -94,13 +98,16 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.comments.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Comments: committing after ${index} entries" }
           titan.commit()
         }
     }
 
   // TODO load from file
-  def importKeywordTypes = ???
+  def importKeywordTypes =
+    KeywordTypes.fromFile.foreach { keywordRow =>
+      uniProtImport.keywordTypes.process(keywordRow, uniProtGraph)
+    }
 
   def importKeywords(commitAfterEntries: Int = 1000) =
     entries.zipWithIndex foreach {
@@ -108,7 +115,7 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.keywords.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Keywprds: committing after ${index} entries" }
           titan.commit()
         }
     }
@@ -119,7 +126,7 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.annotations.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Annotations: committing after ${index} entries" }
           titan.commit()
         }
     }
@@ -130,7 +137,7 @@ case object importSwissProt {
       case (entry, index) =>
         uniProtImport.isoforms.process(entry, uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Isoforms: committing after ${index} entries" }
           titan.commit()
         }
     }
@@ -142,7 +149,7 @@ case object importSwissProt {
       case (fa, index) =>
         uniProtImport.isoformSequences.process(uniprot.IsoformFasta(fa), uniProtGraph)
         if(index % commitAfterEntries == 0) {
-          println { s"Committing after ${index} entries" }
+          println { s"Isoform sequences: committing after ${index} entries" }
           titan.commit()
         }
     }
